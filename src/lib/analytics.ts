@@ -39,7 +39,7 @@ export interface AnalyticsStats {
   deviceStats: { name: string; count: number }[];
 }
 
-const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+export const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 
 /**
  * Tracks a page view by sending visitor metadata to the analytics backend.

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { getAnalyticsStats, getFlagEmoji, AnalyticsStats, deleteLog, clearAllLogs } from '@/lib/analytics';
+import { getAnalyticsStats, getFlagEmoji, AnalyticsStats, deleteLog, clearAllLogs, API_BASE } from '@/lib/analytics';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
@@ -142,12 +142,16 @@ const Analytics = () => {
         if (pin === '2323') {
             setIsLoading(true);
             try {
+                // Persist for subsequent requests
+                sessionStorage.setItem('admin_access_pin', '2323');
+
                 const data = await getAnalyticsStats('2323');
                 setStats(data);
                 await fetchFirewallStatus(); // Fetch firewall too
                 setIsAuthorized(true);
                 toast.success("Identity Verified. Intelligence Feed Active.");
             } catch (error) {
+                console.error('Verify error:', error);
                 toast.error("Failed to fetch intelligence data.");
             } finally {
                 setIsLoading(false);
@@ -160,7 +164,7 @@ const Analytics = () => {
 
     const fetchFirewallStatus = async () => {
         try {
-            const res = await fetch('/api/firewall/status');
+            const res = await fetch(`${API_BASE}/api/firewall/status`);
             const data = await res.json();
             setBlockedCountries(data.blocked.map((b: any) => b.country_code));
             setFirewallStats(data.stats || []);
@@ -180,7 +184,7 @@ const Analytics = () => {
 
         try {
             const authPin = sessionStorage.getItem('admin_access_pin') || '';
-            const res = await fetch('/api/firewall/bulk-toggle', {
+            const res = await fetch(`${API_BASE}/api/firewall/bulk-toggle`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -205,7 +209,7 @@ const Analytics = () => {
     const toggleFirewallSingle = async (code: string) => {
         try {
             const authPin = sessionStorage.getItem('admin_access_pin') || '';
-            const res = await fetch('/api/firewall/toggle', {
+            const res = await fetch(`${API_BASE}/api/firewall/toggle`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -228,7 +232,7 @@ const Analytics = () => {
     const saveLockdown = async () => {
         try {
             const authPin = sessionStorage.getItem('admin_access_pin') || '';
-            const res = await fetch('/api/firewall/lockdown', {
+            const res = await fetch(`${API_BASE}/api/firewall/lockdown`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

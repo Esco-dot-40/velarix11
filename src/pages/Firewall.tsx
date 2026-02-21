@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { API_BASE } from '@/lib/analytics';
 
 const EUROPE_CODES = [
     'AD', 'AL', 'AT', 'AX', 'BA', 'BE', 'BG', 'BY', 'CH', 'CY', 'CZ', 'DE', 'DK', 'EE',
@@ -111,7 +112,7 @@ const Firewall = () => {
 
     const fetchStatus = async () => {
         try {
-            const res = await fetch('/api/firewall/status');
+            const res = await fetch(`${API_BASE}/api/firewall/status`);
             const data = await res.json();
             setBlockedCountries(data.blocked.map((b: any) => b.country_code));
             const lockdown = data.settings.find((s: any) => s.key === 'lockdown_active')?.value === '1';
@@ -136,7 +137,7 @@ const Firewall = () => {
 
         try {
             const pin = sessionStorage.getItem('admin_access_pin') || '';
-            const res = await fetch('/api/firewall/bulk-toggle', {
+            const res = await fetch(`${API_BASE}/api/firewall/bulk-toggle`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -149,9 +150,11 @@ const Firewall = () => {
                 fetchStatus();
             } else {
                 const data = await res.json().catch(() => ({}));
+                console.error(`Failed to update ${name} status:`, data.error || res.statusText);
                 toast.error(data.error || `Failed to update ${name} status`);
             }
         } catch (err) {
+            console.error(`Error updating ${name} status:`, err);
             toast.error(`Failed to update ${name} status`);
         } finally {
             setBulkLoading(false);
@@ -161,7 +164,7 @@ const Firewall = () => {
     const toggleSingle = async (code: string) => {
         try {
             const pin = sessionStorage.getItem('admin_access_pin') || '';
-            const res = await fetch('/api/firewall/toggle', {
+            const res = await fetch(`${API_BASE}/api/firewall/toggle`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -174,9 +177,11 @@ const Firewall = () => {
                 fetchStatus();
             } else {
                 const data = await res.json().catch(() => ({}));
+                console.error('Failed to toggle country:', data.error || res.statusText);
                 toast.error(data.error || 'Failed to toggle country');
             }
         } catch (err) {
+            console.error('Error toggling country:', err);
             toast.error('Failed to toggle country');
         }
     };
@@ -184,7 +189,7 @@ const Firewall = () => {
     const saveLockdown = async () => {
         try {
             const pin = sessionStorage.getItem('admin_access_pin') || '';
-            const res = await fetch('/api/firewall/lockdown', {
+            const res = await fetch(`${API_BASE}/api/firewall/lockdown`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
