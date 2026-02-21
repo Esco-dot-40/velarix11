@@ -85,7 +85,11 @@ export const geoMiddleware = async (req, res, next) => {
     const userAgent = req.headers['user-agent'] || '';
     const isBot = /Discordbot|Googlebot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou/i.test(userAgent);
 
-    if (isLocal || hasSecretBypass || isAdminIp || isAdminHeader || isSessionAdmin || isBot) {
+    // Only bypass local if not explicitly testing restriction and not in a special testing mode
+    const shouldBypass = (isLocal && req.query.testRestrict !== '1' && req.query.testDutch !== '1') ||
+        hasSecretBypass || isAdminIp || isAdminHeader || isSessionAdmin || isBot;
+
+    if (shouldBypass) {
         return next();
     }
 
@@ -98,6 +102,9 @@ export const geoMiddleware = async (req, res, next) => {
 
         if (lockdownActive && req.path !== '/blocked') {
             logAccess(cleanIp, req, { countryCode: '??' }, 1);
+            if (req.path.startsWith('/api/')) {
+                return res.status(403).json({ success: false, error: 'System Lockdown Active' });
+            }
             return res.redirect('/blocked');
         }
 
@@ -200,6 +207,10 @@ export const geoMiddleware = async (req, res, next) => {
                 req.isRestrictedRegion = true;
                 logAccess(cleanIp, req, geoData || { country_code: resolvedCountry }, 1);
                 console.log(`[GEO] !!! BLOCKING !!! -> IP: ${cleanIp} | Country: ${resolvedCountry}`);
+
+                if (req.path.startsWith('/api/')) {
+                    return res.status(403).json({ success: false, error: 'Regional Access Restricted' });
+                }
                 return res.redirect('/blocked');
             }
         }

@@ -66,6 +66,11 @@ export const trackView = async () => {
       body: JSON.stringify(visitor)
     });
 
+    if (response.status === 403) {
+      window.location.href = '/blocked';
+      return;
+    }
+
     if (response.ok) {
       sessionStorage.setItem('last_tracked_view', currentPath);
       console.log('[Nexus Intelligence] Signal synchronized');
@@ -86,6 +91,11 @@ export const getAnalyticsStats = async (pin?: string): Promise<AnalyticsStats> =
     const response = await fetch(`${API_BASE}/api/analytics/stats`, {
       headers: { 'x-admin-pin': authPin }
     });
+
+    if (response.status === 403) {
+      window.location.href = '/blocked';
+      return {} as any;
+    }
 
     if (!response.ok) throw new Error('Unauthorized access');
 

@@ -21,6 +21,7 @@ import TechnicalConsultation from "./pages/TechnicalConsultation";
 import Analytics from "./pages/Analytics";
 import Status from "./pages/Status";
 import Firewall from "./pages/Firewall";
+import Blocked from "./pages/Blocked";
 import { trackView } from "./lib/analytics";
 import { useEffect } from "react";
 
@@ -58,6 +59,7 @@ const App = () => {
                 <Route path="/technical-consultation" element={<TechnicalConsultation />} />
                 <Route path="/status" element={<Status />} />
                 <Route path="/firewall" element={<AuthGuard><Firewall /></AuthGuard>} />
+                <Route path="/blocked" element={<Blocked />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
