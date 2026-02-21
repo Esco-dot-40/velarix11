@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, AlertCircle, XCircle, Clock, Globe, Zap, Shield, Database } from "lucide-react";
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { API_BASE } from '@/lib/analytics';
 
 interface Monitor {
     id: string;
@@ -63,7 +64,7 @@ export default function Status() {
         // Simulate real check against /api/health
         const checkHealth = async () => {
             try {
-                const response = await fetch('/api/health');
+                const response = await fetch(`${API_BASE}/api/health`);
                 const data = await response.json();
                 if (data.status === 'ok') {
                     setOverallStatus('operational');
@@ -92,8 +93,8 @@ export default function Status() {
             <main className="container px-4 pt-32 pb-24 mx-auto max-w-5xl">
                 {/* Header Section */}
                 <div className={`mb-12 p-8 rounded-3xl border transition-all duration-500 flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-xl ${overallStatus === 'operational'
-                        ? 'bg-emerald-500/10 border-emerald-500/20'
-                        : 'bg-amber-500/10 border-amber-500/20'
+                    ? 'bg-emerald-500/10 border-emerald-500/20'
+                    : 'bg-amber-500/10 border-amber-500/20'
                     }`}>
                     <div className="flex items-center gap-6">
                         <div className={`p-4 rounded-2xl ${overallStatus === 'operational' ? 'bg-emerald-500/20' : 'bg-amber-500/20'
