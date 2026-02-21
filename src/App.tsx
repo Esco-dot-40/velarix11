@@ -49,7 +49,7 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route
                   path="/analytics"
-                  element={<Analytics />}
+                  element={<AuthGuard><Analytics /></AuthGuard>}
                 />
                 <Route path="/website-ecommerce" element={<WebsiteEcommerce />} />
                 <Route path="/branding-content" element={<BrandingContent />} />
@@ -57,7 +57,7 @@ const App = () => {
                 <Route path="/web-optimization" element={<WebOptimization />} />
                 <Route path="/technical-consultation" element={<TechnicalConsultation />} />
                 <Route path="/status" element={<Status />} />
-                <Route path="/firewall" element={<Firewall />} />
+                <Route path="/firewall" element={<AuthGuard><Firewall /></AuthGuard>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

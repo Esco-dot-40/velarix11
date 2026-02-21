@@ -135,14 +135,21 @@ const Firewall = () => {
         const action = isBlocking ? 'block' : 'unblock';
 
         try {
+            const pin = sessionStorage.getItem('admin_access_pin') || '';
             const res = await fetch('/api/firewall/bulk-toggle', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-pin': pin
+                },
                 body: JSON.stringify({ countryCodes: codes, action })
             });
             if (res.ok) {
                 toast.success(`${action === 'block' ? 'Blocked' : 'Unblocked'} ${name}`);
                 fetchStatus();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || `Failed to update ${name} status`);
             }
         } catch (err) {
             toast.error(`Failed to update ${name} status`);
@@ -153,14 +160,21 @@ const Firewall = () => {
 
     const toggleSingle = async (code: string) => {
         try {
+            const pin = sessionStorage.getItem('admin_access_pin') || '';
             const res = await fetch('/api/firewall/toggle', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-pin': pin
+                },
                 body: JSON.stringify({ countryCode: code })
             });
             if (res.ok) {
                 toast.success(`Updated status for ${code}`);
                 fetchStatus();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || 'Failed to toggle country');
             }
         } catch (err) {
             toast.error('Failed to toggle country');
@@ -169,14 +183,21 @@ const Firewall = () => {
 
     const saveLockdown = async () => {
         try {
+            const pin = sessionStorage.getItem('admin_access_pin') || '';
             const res = await fetch('/api/firewall/lockdown', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-pin': pin
+                },
                 body: JSON.stringify({ active: lockdownMode, adminIp })
             });
             if (res.ok) {
                 toast.success('Lockdown settings updated');
                 fetchStatus();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || 'Failed to update lockdown');
             }
         } catch (err) {
             toast.error('Failed to update lockdown');

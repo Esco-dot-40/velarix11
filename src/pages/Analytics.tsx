@@ -179,14 +179,21 @@ const Analytics = () => {
         const action = isBlocking ? 'block' : 'unblock';
 
         try {
+            const authPin = sessionStorage.getItem('admin_access_pin') || '';
             const res = await fetch('/api/firewall/bulk-toggle', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-pin': authPin
+                },
                 body: JSON.stringify({ countryCodes: codes, action })
             });
             if (res.ok) {
                 toast.success(`${action === 'block' ? 'Blocked' : 'Unblocked'} ${name}`);
                 fetchFirewallStatus();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || `Failed to update ${name}`);
             }
         } catch (err) {
             toast.error(`Failed to update ${name}`);
@@ -197,14 +204,21 @@ const Analytics = () => {
 
     const toggleFirewallSingle = async (code: string) => {
         try {
+            const authPin = sessionStorage.getItem('admin_access_pin') || '';
             const res = await fetch('/api/firewall/toggle', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-pin': authPin
+                },
                 body: JSON.stringify({ countryCode: code })
             });
             if (res.ok) {
                 toast.success(`Updated status for ${code}`);
                 fetchFirewallStatus();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || 'Toggle failed');
             }
         } catch (err) {
             toast.error('Toggle failed');
@@ -213,14 +227,21 @@ const Analytics = () => {
 
     const saveLockdown = async () => {
         try {
+            const authPin = sessionStorage.getItem('admin_access_pin') || '';
             const res = await fetch('/api/firewall/lockdown', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-pin': authPin
+                },
                 body: JSON.stringify({ active: lockdownMode, adminIp })
             });
             if (res.ok) {
                 toast.success('Lockdown configuration updated');
                 fetchFirewallStatus();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || 'Update failed');
             }
         } catch (err) {
             toast.error('Update failed');
@@ -275,8 +296,31 @@ const Analytics = () => {
     }, [stats]);
 
     useEffect(() => {
+        const savedPin = sessionStorage.getItem('admin_access_pin');
+        if (savedPin === '2323' && !isAuthorized) {
+            setPin('2323');
+            // We can't call handleVerify directly because it depends on the 'pin' state which might not have updated yet.
+            // So we'll trigger the logic here.
+            const autoVerify = async () => {
+                setIsLoading(true);
+                try {
+                    const data = await getAnalyticsStats('2323');
+                    setStats(data);
+                    await fetchFirewallStatus();
+                    setIsAuthorized(true);
+                } catch (error) {
+                    console.error('Auto-verify failed');
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            autoVerify();
+        }
+    }, [isAuthorized]);
+
+    useEffect(() => {
         return () => {
-            setIsAuthorized(false);
+            // No longer resetting isAuthorized here to avoid flicker on re-mount if pin is in session
             setStats(null);
         };
     }, []);
