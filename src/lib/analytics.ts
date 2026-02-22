@@ -50,7 +50,7 @@ export const trackView = async () => {
     const lastTracked = sessionStorage.getItem('last_tracked_view');
     const currentPath = window.location.pathname;
 
-    if (lastTracked === currentPath) return;
+    if (currentPath === '/blocked' || lastTracked === currentPath) return;
 
     const visitor = {
       path: currentPath,
